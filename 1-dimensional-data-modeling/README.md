@@ -69,7 +69,7 @@ There are two methods to get Postgres running locally.
         make up
         ```
         
-    - If you're on Windows:
+    - If you're on Windows. **`-d`** is for docker to run behind background :
         
         ```bash
         docker compose up -d
@@ -116,14 +116,20 @@ There are two methods to get Postgres running locally.
 
 ## **🚨 Tables not loading!? 🚨**
 - If you are on Windows and used **`docker compose up`**, table creation and data load will not take place with container creation. Once you have docker container up and verified that you are able to connect to empty postgres database with your own choice of client, follow the following steps:
-1. On Docker desktop, connect to my-postgres-container terminal.
-2. Run:
+1. Connect to Docker terminal. Run this to get container id.
+
     ```bash
-    psql \
-        -v ON_ERROR_STOP=1 \
-        --username $POSTGRES_USER \
-        --dbname $POSTGRES_DB \
-        < /docker-entrypoint-initdb.d/data.dump>
+    docker ps
+    ```
+     Then run this to enter docker container through bash terminal.
+     
+     ```bash
+     docker exec -it <docker id> bash
+     ```
+
+2. Inside Docker terminal, run:
+    ```bash
+    pg_restore --username $POSTGRES_USER --dbname $POSTGRES_DB docker-entrypoint-initdb.d/data.dump
     ```
     - → This will run the file `data.dump` from inside your docker container.
 

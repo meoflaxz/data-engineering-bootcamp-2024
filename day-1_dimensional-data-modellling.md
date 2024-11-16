@@ -9,27 +9,27 @@
 - **Fixed** - 1 value that **never** changed (birthday)
 
 ## **:arrow_upper_right: Knowing Your Consumer (Data modelling use case)**
-- Data Analysts / Data Scientist
+- **Data Analysts / Data Scientist**
     * Should be **very easy to query**. Not many complex data types.
-- Other Data Engineers
+- **Other Data Engineers**
     * Should be **compact** and probably harder to query.Nested types are okay.
-- ML models
+- **ML models**
     * **Depends on the model** and how its trained.
-- Customers
+- **Customers**
     * Should be **very easy to interpret charts**.
 
 ## **:paperclip: OLTP vs Master Data vs OLAP**
-- OLTP (Online transaction processing)
+- **OLTP (Online transaction processing)**
     * Optimizes for **low-latency**, **low-volume queries**
     * Mostly outside of data engineers realm
     * Where **software engineer** do data modelling to make their system run as quickly as possible.
     * Heavy **normalization** occurs to remove data deduplication, primary keys, constraint foreign keys among tables.
     * **Lots of JOINs** to retrieve desired data
-- OLAP (Online analytics processing)
+- **OLAP (Online analytics processing)**
     * Optimizes for **large volume**, **aggregation** queries.
     * **Most common data modelling** that data engineer used.
     * Emphasizing on **running fast query with minimal JOINs**
-- Master Data
+- **Master Data**
     * **Sits in the middle** between OLTP and OLAP
     * Optimizes for completeness of entity definitions while deduped the data to avoid data duplication.
 
@@ -86,7 +86,7 @@
 
 ## **:hammer: Temporal Cardinality Explosions of Dimensions**
 - When you **add a temporal aspect to your dimensions** and the **cardinality increases** by at least 1 order of magnitude
-- Example
+- **Example**
     * Airbnb has ~6 million listings
         - If we want to know the nightly pricing and available of each night for the next year
             * That is 365 * 6 million or about ~2 billion nights

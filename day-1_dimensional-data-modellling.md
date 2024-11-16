@@ -4,7 +4,7 @@
 - Some of these dimensions may **IDENTIFY** an identity (user's ID, device ID)
 - Others are just attributes
 
-##### Dimensions come in **2** flavours
+**:triangular_ruler: Dimensions come in 2 flavours**
 - **Slowly-changing-dimensions (SCD)** - **time** dependent (metrics)
 - **Fixed** - 1 value that **never** changed (birthday)
 

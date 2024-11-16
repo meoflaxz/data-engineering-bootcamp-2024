@@ -1,6 +1,6 @@
 ## What is a Dimension?
 
-##### :straight_ruler: Dimensions are attributes of an entity (user's birthday, user's fav food)
+:straight_ruler: Dimensions are attributes of an entity (user's birthday, user's fav food)
 - Some of these dimensions may **IDENTIFY** an identity (user's ID, device ID)
 - Others are just attributes
 

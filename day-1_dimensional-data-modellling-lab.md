@@ -1,8 +1,8 @@
-## :wrench: Building Cumulative Table Design 
+# :wrench: Building Cumulative Table Design 
 
 - Data will be based on data dump in the postgresql database.
 
-#### :flashlight: STEP 1: Identify which column is temporal and which is fixed.
+## :flashlight: STEP 1: Identify which column is temporal and which is fixed.
 
 - For this case, we need columns like **`player_name`, `height`, `college`, `country`, `draft_year`, `draft_round`, `draft_number`, `season`, `gp`, `pts`, `ast`, `reb`, `weight`**.
 
@@ -15,7 +15,7 @@
      ![alt text](assets/imagedm.png)
 - While we know we can aggregate the **RED** value because the value is same throughout the records, we can create a `STRUCT/ARRAY` data type to contain all the **YELLOW** value in one column.
 
-#### :hammer: STEP 2: Creating `STRUCT` Data Type
+## :hammer: STEP 2: Creating `STRUCT` Data Type
 
 - Confirm the temporal columns, and run this query, make sure to follow the data type format.
 
@@ -44,7 +44,7 @@
             PRIMARY KEY (player_name, current_season));
     ```
 
-#### :scissors: STEP 3: Creating The Cumulative Table
+## :scissors: STEP 3: Creating The Cumulative Table
 
 - The first step of this is knowing how early we need to build this table. We can use this query to check the earliest year of the data.
 
@@ -116,7 +116,7 @@
 
     ![alt text](assets/imagedm2.png)
 
-#### :telescope: STEP 4: Inserting the Data into the Cumulative Table
+## :telescope: STEP 4: Inserting the Data into the Cumulative Table
 
 - Adjust the previous query by adding **`INSERT`** syntax to the `players` table - the table that will store the cumulative data. You can straightaway populate the data by changing the `current_season` and `season` to increasing year respectively.
 
@@ -171,7 +171,7 @@
 
     ![alt text](assets/imagedm3.png)
 
-#### :memo: Flattening the Cumulative Table
+## :memo: Flattening the Cumulative Table
 
 - If you want to flatten the data and retrieve the column like as it is. you can use **`UNNEST`**. Here what it looks like. For example we want to query `current_season=2001` and` player_name='Michael Jordan'`.
 

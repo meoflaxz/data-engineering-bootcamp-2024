@@ -73,7 +73,7 @@
     * **Trickier querying** but more **compact**
     * Use case: **Upstream(push) staging/master** data where **majority consumers are other data engineers**.
 
-## **:notebook Struct vs Array vs Map**
+## **:notebook: Struct vs Array vs Map**
 - **Struct**
     * **Keys are rigidly defined**, compression is good
     * Values can be **any type**

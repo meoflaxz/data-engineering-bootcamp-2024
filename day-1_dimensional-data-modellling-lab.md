@@ -1,6 +1,6 @@
 # :wrench: Building Cumulative Table Design 
 
-- Data will be based on data dump in the postgresql database.
+- Data will be based on data dump in the postgresql database. Follow the step [here](https://github.com/meoflaxz/data-engineering-bootcamp-2024/tree/main/1-dimensional-data-modeling) to setup the postgres using docker 
 
 ## :flashlight: STEP 1: Identify which column is temporal and which is fixed.
 
@@ -197,3 +197,110 @@
 - One thing to note that is by using cumulative design and holding the temporal column in one component, it **will not shuffle** the data in a way that **will not ruin compression efficiency**.
 
     ![alt text](assets/imagedm5.png)
+
+- Let's do some more exploration. We are gonna add new column to the players table, but before let's drop it first.
+
+    ```sql
+       DROP TABLE players;
+    ```
+
+- We will create a scoring class method to rank the players based on their points. We will use `ENUM` to create the data type. `ENUM` values ae stored as integers with each string mapped to an index. 
+
+    ```sql
+       CREATE TYPE scoring_class AS ENUM ('star', 'good', 'average', 'bad');
+    ```
+- Let's create the main table, adding the previous `scoring_class` with `ENUM` data type. Another column we would like to add is `years_since_last_season` column
+
+    ```sql
+        CREATE TABLE players (
+            player_name TEXT,
+            height TEXT,
+            college TEXT,
+            country TEXT,
+            draft_year TEXT,
+            draft_round TEXT,
+            draft_number TEXT,
+            season_stats season_stats[],
+            scoring_class scoring_class,
+            years_since_last_season INTEGER,
+            current_season INTEGER,
+            PRIMARY KEY (player_name, current_season));
+    ```
+
+- Next we will build the table with required data. We will use the previous query to create the data with some new addition for the new column. Remember to **`INSERT`** more data for `current_season` and `season`.
+
+    ```sql
+        INSERT INTO players
+        WITH yesterday AS (
+            SELECT * FROM players
+            WHERE current_season = 1995
+        ),
+        today AS (
+            SELECT * FROM player_seasons
+            WHERE season = 1996
+        )
+        SELECT
+            COALESCE(t.player_name, y.player_name) AS player_name,
+            COALESCE(t.height, y.height) AS height,
+            COALESCE(t.college, y.college) AS college,
+            COALESCE(t.country, y.country) AS country,
+            COALESCE(t.draft_year, y.draft_year) AS draft_year,
+            COALESCE(t.draft_round, y.draft_round) AS draft_round,
+            COALESCE(t.draft_number, y.draft_number) AS draft_number,
+            CASE WHEN y.season_stats IS NULL THEN ARRAY[ROW(
+                    t.season,
+                    t.gp,
+                    t.pts,
+                    t.ast,
+                    t.reb)::season_stats]
+                WHEN t.season IS NOT NULL THEN y.season_stats || ARRAY[ROW(
+                    t.season,
+                    t.gp,
+                    t.pts,
+                    t.ast,
+                    t.reb)::season_stats]
+                ELSE y.season_stats
+            END AS season_stats,
+            CASE WHEN t.season IS NOT NULL THEN
+                CASE WHEN t.pts > 20 THEN 'star'
+                    WHEN t.pts > 15 THEN 'good'
+                    WHEN t.pts > 10 THEN 'average'
+                    ELSE 'bad'
+                END::scoring_class
+                ELSE y.scoring_class
+            END as scoring_class,
+            CASE WHEN t.season IS NOT NULL THEN 0 
+                ELSE y.years_since_last_season + 1
+            END AS years_since_last_season,
+            COALESCE(t.season, y.current_season + 1) AS current_season
+        FROM today t
+        FULL OUTER JOIN yesterday y
+            ON t.player_name = y.player_name
+    ```
+
+- Checking out data to see the new columns we just added.
+
+    ```sql
+       SELECT
+        *
+       FROM players
+       WHERE current_season = 2001;
+    ```
+
+![alt text](assets/imagedm6.png)
+
+- Using the table we just build, we also can create some neat analytics for example finding the **most improved player between the first season and the recent season**. We will use the points data for the calculation. `season_stats[2]` is used because our **points** record in that index.
+
+    ```sql
+       SELECT
+        player_name,
+        (season_stats[CARDINALITY(season_stats)]::season_stats).pts /
+        CASE WHEN (season_stats[2]::season_stats).pts = 0 THEN 1 ELSE (season_stats[2]::season_stats).pts
+        END AS pts
+       FROM players
+       WHERE current_season = 2001;
+    ```
+- We can find out that player Don MacLean is the most improved player for the year 2001
+
+![alt text](assets/imaged7.png)
+

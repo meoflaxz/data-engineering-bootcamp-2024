@@ -1,6 +1,6 @@
 # :wrench: Building Cumulative Table Design 
 
-- Data will be based on data dump in the postgresql database. Follow the step [here](https://github.com/meoflaxz/data-engineering-bootcamp-2024/tree/main/1-dimensional-data-modeling) to setup the postgres using docker 
+- Data will be based on data dump in the postgresql database. Follow the step [here](https://github.com/meoflaxz/data-engineering-bootcamp-2024/tree/main/1-dimensional-data-modeling) to setup the postgres using docker.
 
 ## :flashlight: STEP 1: Identify which column is temporal and which is fixed.
 
@@ -300,7 +300,7 @@
        FROM players
        WHERE current_season = 2001;
     ```
-- We can find out that player Don MacLean is the most improved player for the year 2001
+- We can find out that player Don MacLean is the most improved player for the year 2001.
 
 ![alt text](assets/imaged7.png)
 

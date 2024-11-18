@@ -1,5 +1,7 @@
 ## Idempotent pipelines are CRITICAL
 
+Video lecture - [Youtube](https://www.youtube.com/watch?v=emQM9gYh0Io)
+
 - Your pipeline should produces the same results regardless of when it's ran
 - Idempotent meaning - denoting an element of a set which is unchanged in value when multiplied or otherwiser operated on by itself.
 

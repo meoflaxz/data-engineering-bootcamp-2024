@@ -1,6 +1,7 @@
 # :wrench: Building Cumulative Table Design 
 
 - Data will be based on data dump in the postgresql database. Follow the step [here](https://github.com/meoflaxz/data-engineering-bootcamp-2024/tree/main/1-dimensional-data-modeling) to setup the postgres using docker.
+- Video lab - [Youtube](https://www.youtube.com/watch?v=dWj8VeBEQCc)
 
 ## :flashlight: STEP 1: Identify which column is temporal and which is fixed.
 

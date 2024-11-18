@@ -1,5 +1,7 @@
 ## :question: What is a Dimension?
 
+Video lecture - [Youtube](https://www.youtube.com/watch?v=5U-BbZ9G_xU&t=1034s)
+
 **Dimensions are attributes of an entity (user's birthday, user's fav food)**
 - Some of these dimensions may **IDENTIFY** an identity (user's ID, device ID)
 - Others are just attributes

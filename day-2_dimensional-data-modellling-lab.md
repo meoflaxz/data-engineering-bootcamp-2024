@@ -26,7 +26,9 @@
             PRIMARY KEY (player_name, current_season));
     ```
 
+- After creating the schema we will run the following query to populate the table. So the data is actually a cumulation and addition for every value in season_stats that we hold them in an array. Later on we will check the output after building the table.
     ```sql
+        INSERT INTO players
         WITH years AS (
             SELECT *
             FROM generate_series(1996, 2022) AS season
@@ -93,9 +95,28 @@
                 ELSE 'bad'
             END::scoring_class AS scoring_class,
             w.season - (w.seasons[CARDINALITY(w.seasons)]).season as years_since_last_season,
-            w.season,
+            w.season AS current_season,
             (w.seasons[CARDINALITY(w.seasons)]).season = w.season AS is_active
         FROM windowed w
         JOIN static s
             ON w.player_name = s.player_name
+    ```
+
+- Here what it looks like for the output of above query. You can see the value of `season_stats` builds up for every season.
+
+    ![alt text](assets/imagedm8.png)
+
+
+- We are now continuing to the actual SCD modelling. Before that, in this exercise, we would want to track two columns that is scoring_class and is_active from the players table that changed throughout the season. Now, we would need an scd table for that.
+
+    ```sql
+        CREATE TABLE players_scd (
+            player_name TEXT,
+            scoring_class scoring_class,
+            is_active boolean,
+            start_season INTEGER,
+            end_season INTEGER
+            current_season INTEGER
+            PRIMARY KEY (player_name, current_season)
+        )
     ```

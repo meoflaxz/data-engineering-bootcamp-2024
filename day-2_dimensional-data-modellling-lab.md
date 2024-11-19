@@ -1,4 +1,4 @@
-# Building Slowly Changing Dimensions (SCD) Data Modelling
+# :whale2: Building Slowly Changing Dimensions (SCD) Data Modelling
 
 - Data will be based on data dump in the postgresql database. Follow the step [here](https://github.com/meoflaxz/data-engineering-bootcamp-2024/tree/main/1-dimensional-data-modeling) to setup the postgres using docker.
 - Video lab - [Youtube]()

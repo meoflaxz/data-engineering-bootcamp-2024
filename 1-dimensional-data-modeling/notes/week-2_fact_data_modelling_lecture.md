@@ -50,4 +50,55 @@
 - Sometimes DENORMALIZATION is the way to go, not the cause
 
 ## How does logging fit into fact data?
+- Logging brings in all critical context for your fact data
+    - Usually done in collaboration with online system engineer
+- Dont log everything
+    - Log only what you really need
+    - Cause a lot of time can be expensive and costly
+- Loggin should conform to values specified by the online teams
+    - Thrift is used at airbnb and netflix for this
+    - There should exist middlelayer to share schema between online team and data engineer
+    - keeping everyone on the same page and shared vision
 
+## Potential options when working with high volume fact data
+- Sampling
+    - Works best for metric driven use case where imprecision isnt an issue, doesnt work for all cases
+- Bucketing
+    - Fact data can be bucketed by one of the important dimensions (usually user, the who field)
+    - Bucket joins can be much faster than shuffle joins
+    - Sorted-merge Bucket (SMB) joins can do joins without shuffle at all
+
+## How long should you hold onto fact data?
+- High volumes make fact data much more costly to hold onto for a long time
+- Big tech hand an interesting approach here
+    - Any fact tables <10TBs, retention didnt matter much
+        - Anonymization of facts usually happened after 60-90 days though and the data would be moved to a new table with PII stripped
+    - Any fact tables >100TBs, VERY SHORT RETENTION (14 days or less)
+
+## Deduplication of fact data
+- Fact can often be duplicated
+    - You can click a notification multiple times
+- How do you pick right window for deduplication?
+    - No duplicates in a day? An hour? A week?
+    - Looking at distribution of duplicates here is good idea
+- Intraday deduping options
+    - Streaming
+    - Microbatch
+- Streaming allows to capture most duplicates in a very efficient manner
+    - Windowing matters here
+    - Entire day duplicates can be harder to streaming because it needs to hold onto such a big window of memory
+    - A large memory of duplicates usually happen within a short time of first event
+    - 15 minute to hourly windows are a sweet spot
+
+## Hourly Microbatch Dedupe
+- USed to reduce landing time of daily table that  dedupe slowly
+- Worked at Facebook using this patter
+    - Deduiplicated 50 billion notification events every day
+    - Reduced landing time from 9 hours after UTC to 1 hour before UTC
+- Dedupe each hour with GROUP BY
+- Use SUM and COUNT to aggregate duplicates, use COLLECT_LIST to collect metadata about the duplicats that might be different
+- Dedupe between hours with FULL OUTER JOIN like branches of a tree
+
+    - ![alt text](../assets/imagefm.png)
+- works great because low latency, no need to wait,
+- works for arbitrary scale

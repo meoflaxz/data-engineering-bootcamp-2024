@@ -100,5 +100,6 @@
 - Dedupe between hours with FULL OUTER JOIN like branches of a tree
 
     - ![alt text](../assets/imagefm.png)
+    
 - works great because low latency, no need to wait,
 - works for arbitrary scale

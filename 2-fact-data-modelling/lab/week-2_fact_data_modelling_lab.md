@@ -17,7 +17,7 @@
 
 - Results will show you how many duplicates for each unique column combination. In this case we got 2 for each.
 
-    - ![alt text](image-1.png)
+    - ![alt text](../assets/image1.png)
 
 - Let's proceed with removing the duplicates using the ROW_NUMBER() and PARTITION BY
 
@@ -51,7 +51,7 @@
 
 - Now the data looks more pretty with the time context
 
-    - ![alt text](image-2.png)
+    - ![alt text](../assets/image2.png)
 
 - Let's proceed with building the DDL statement to create the fact table. Before that you need to know which columns needed and also the data types associate with.
 
@@ -146,3 +146,27 @@
        - dim for group by and filter on
        - m for aggregate and math operation on
        - easy for the eyes to read and understand, something that is very common in fact table
+
+- Some of the analysis that can be done using the fact table.
+
+    ```sql
+        SELECT
+            dim_player_name,
+            dim_is_playing_at_home,
+            abbreviation,
+            COUNT(1) AS num_games,
+            SUM(m_pts) AS total_points,
+            COUNT(CASE WHEN dim_not_with_team THEN 1 END) AS bailed_num,
+            CAST(COUNT(CASE WHEN dim_not_with_team THEN 1 END) AS REAL) / COUNT(1) AS bailed_pct
+        FROM fct_game_details
+        LEFT JOIN teams
+            ON fct_game_details.dim_team_id = teams.team_id
+        GROUP BY 1,2,3
+        ORDER BY 7 DESC;
+    ```
+
+- This query is very fast since we have remove the duplication and also the format is more efficient due to simpler datatypes (especially REAL and BOOLEAN instead of STRING). This allows higher performance while at the same time not removing any information that is important from original table.
+
+- For this query, we are exploring the top players who are not playing at their home team.
+
+    - ![alt text](../assets/image3.png)

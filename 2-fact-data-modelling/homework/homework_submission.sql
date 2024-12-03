@@ -147,3 +147,56 @@ GROUP BY user_id;
 
 -- DDL for hosts_cumulated table
 
+CREATE TABLE hosts_cumulated (
+    host TEXT,
+    host_activity_datelist DATE[],
+    date DATE,
+    PRIMARY KEY (host, date)
+);
+
+-- ANALYSE MIN AND MAX FOR EVENT TIME TO GENERATE MONTHLY DATA
+-- MIN -> 2023-01-01
+-- MAX -> 2023-01-31
+SELECT  
+    MIN(event_time) AS min_event_time,
+    MAX(event_time) AS max_event_time
+FROM events;
+
+--------------------------------------------------------------------------------------------------------------------------
+--------------------------------------------------------------------------------------------------------------------------
+
+-- INCREMENTAL QUERY TO GENERATE host_activity_datelist
+
+INSERT INTO hosts_cumulated
+WITH yesterday AS (
+    SELECT * FROM hosts_cumulated
+    WHERE date = DATE('2023-01-30')
+),
+today AS (
+    WITH deduped AS (
+        SELECT
+            host,
+            DATE(CAST(event_time AS DATE)) AS date_active,
+            ROW_NUMBER() OVER(PARTITION BY host, DATE(CAST(event_time AS DATE))) as row_num
+        FROM events
+        WHERE DATE(CAST(event_time AS DATE)) = DATE('2023-01-31')
+            AND host IS NOT NULL
+        GROUP BY host, DATE(CAST(event_time AS DATE))
+    )
+    SELECT * FROM deduped
+    WHERE row_num = 1
+)
+SELECT
+    COALESCE(t.host, y.host) AS host,
+    CASE
+        WHEN y.host_activity_datelist IS NULL THEN ARRAY[t.date_active]
+        WHEN t.date_active IS NULL THEN y.host_activity_datelist
+            ELSE ARRAY[t.date_active] || y.host_activity_datelist
+    END::DATE[] AS host_activity_datelist,
+    COALESCE(t.date_active, y.date + INTERVAL '1 day') AS date
+FROM today t
+FULL OUTER JOIN yesterday y
+ON t.host = y.host;
+
+-- SHOW TABLE
+SELECT * FROM hosts_cumulated;

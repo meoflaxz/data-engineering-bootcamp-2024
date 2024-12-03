@@ -200,3 +200,67 @@ ON t.host = y.host;
 
 -- SHOW TABLE
 SELECT * FROM hosts_cumulated;
+
+
+--------------------------------------------------------------------------------------------------------------------------
+--------------------------------------------------------------------------------------------------------------------------
+
+-- REDUCED FACT TABLE
+-- DDL host_activity_reduced
+
+CREATE TABLE host_activity_reduced (
+    host TEXT,
+    month DATE,
+    hit_array TEXT,
+    unique_visitors REAL[],
+    PRIMARY KEY(host, month)
+);
+
+DROP TABLE host_activity_reduced;
+
+--------------------------------------------------------------------------------------------------------------------------
+--------------------------------------------------------------------------------------------------------------------------
+
+-- FACT REDUCED TABLE INCREMENTAL QUERY
+INSERT INTO host_activity_reduced
+WITH daily_aggregate AS (
+    SELECT
+        host,
+        DATE(event_time) AS date,
+        COUNT(1) AS num_visitors
+    FROM events
+    WHERE host IS NOT NULL
+        AND DATE(event_time) = DATE('2023-01-06')
+    GROUP BY host, DATE(event_time)
+),
+yesterday_array AS (
+    SELECT
+        host,
+        month,
+        hit_array,
+        unique_visitors
+    FROM host_activity_reduced
+    WHERE month = DATE('2023-01-05')
+)
+SELECT
+    COALESCE(da.host, ya.host) AS host,
+    COALESCE(ya.month, DATE_TRUNC('month', da.date)) AS month,
+    'site_hits' AS hit_array,
+    CASE
+        -- Case 1: When we already have existing data for this month
+        WHEN ya.unique_visitors IS NOT NULL
+            THEN ya.unique_visitors || ARRAY[COALESCE(da.num_visitors, 0)]
+        -- Case 2: When this is the first entry for the month
+        -- will fill 0 first up until the current day
+        WHEN ya.unique_visitors IS NULL
+            THEN ARRAY_FILL(0, ARRAY[COALESCE(da.date -DATE(DATE_TRUNC('MONTH', da.date)))]) 
+            || ARRAY[COALESCE(da.num_visitors, 0)]
+    END AS unique_visitors
+FROM daily_aggregate da
+FULL OUTER JOIN yesterday_array ya
+ON da.host = ya.host
+ON CONFLICT (host, month)
+DO UPDATE SET
+    unique_visitors = EXCLUDED.unique_visitors;
+
+SELECT * FROM host_activity_reduced;

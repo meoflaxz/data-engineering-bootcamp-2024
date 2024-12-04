@@ -208,6 +208,7 @@ SELECT * FROM hosts_cumulated;
 -- REDUCED FACT TABLE
 -- DDL host_activity_reduced
 
+-- important to check primary key
 CREATE TABLE host_activity_reduced (
     host TEXT,
     month DATE,
@@ -264,3 +265,5 @@ DO UPDATE SET
     unique_visitors = EXCLUDED.unique_visitors;
 
 SELECT * FROM host_activity_reduced;
+
+

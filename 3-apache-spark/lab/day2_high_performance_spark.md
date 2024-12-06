@@ -33,6 +33,7 @@
                 .joinWith(devices, events("device_id") === devices("device_id"), "inner")
                 .map { case (event: Event, device: Device) => 
                     EventWithDeviceInfo(
+                        // getOrElse to handle NULL value
                         user_id = event.user_id.getOrElse(-1),
                         device_id = device.device_id,
                         browser_type = device.browser_type,
@@ -49,7 +50,7 @@
                 }
         ``` 
 
-    - DataFrame
+    - DataFrame. Dollar symbol for columns
 
         ```java
             // DataFrames give up some of the intellisense because you no longer have static typing
@@ -88,3 +89,27 @@
                 FROM filtered_events fe 
                 JOIN devices d ON fe.device_id = d.device_id
             """)
+
+#### Comparison spylon kernel vs ipykernel
+
+- spylon
+    - Native Scala/Spark support
+    - Better Spark integration and performance
+    - Support Scala-specific features
+
+- ipykernel
+    - More widely used/tested
+    - Better Python integration
+    - More consisten notebook behaviour
+
+- spylon or ipykernel?
+    - spylon for pure scala/spark workflows, ipykernel for mixed python/scala environments or if stability is priority
+
+#### Caching
+
+- Use .cache() when you want to use the data more than 1 time
+    - because cache() affects performance and wastes memory
+- cache() and persist(StorageLevel(MEMORY_ONLY)) is the same thing
+
+#### Bucket Joining in Iceberg
+

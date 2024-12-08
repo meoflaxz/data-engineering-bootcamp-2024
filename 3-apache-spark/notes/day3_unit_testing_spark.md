@@ -58,3 +58,43 @@
 - SO WHO WINS?
 - Depends on the strength of you engineering leaders and how much you push back!
 - Don't cut corners to go fast
+
+### Data Engineering is Engineering, it is Not analytics
+
+- You want to build robust infrastructure and reliable highway
+
+#### Data Engineering capability standards will increase over time
+
+- Latency
+    - Solved with streaming pipelines and microbatch pipelines
+- Quality
+    - Solved with best practices and frameworks like Great Expectations, Amazon Deequ
+- Completeness
+    - Solved with communication with domain experts
+- Ease-of-access and usability
+    - Solved with data products and proper data modelling
+
+#### How to do Data Engineering with a Software Engineering Mindset?
+
+- Code is 90% read by humans and 10% executed by machines
+    - You want to write code that is readable and easy to maintain **IMPORTANT!**
+    - If 5% nested subquery is faster than normal CTE, is it worth the pain when other people want to troubleshoot them?
+- Silent failures are your enemy
+    -  Failures that go unnoticed until you get yelled at
+- Loud failures are your friend
+    - Fail when the pipeline when bad data is introduced
+    - Loud failures are accomplished by testing and CI/Code
+- DRY code and YAGNI principles
+    - SQL and DRY are very combative
+- Design documents are your friend
+- Care about your efficiency
+    - Data structures and algorithms
+    - Understanding JOIN and shuffle
+
+#### Should Data Engineers Learn Software Engineering Best Practices?
+
+- Short answer, YES?
+    - Opens up to more opportunities
+- LLMs and other things will make the analytics and SQL layer of data engineering job more susceptible to automation
+- If you don't want to lean these things
+    - Go into analytics engineering

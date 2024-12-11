@@ -27,4 +27,4 @@
             spark.driver.memory                    16g
             spark.executor.extraJavaOptions        -XX:+PrintGCDetails
             spark.memory.offHeap.enabled           true
-            spark.memory.offHeap.size              16g
+            spark.memory.offHeap.size              16g 

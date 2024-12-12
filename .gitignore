@@ -136,3 +136,4 @@ dump.sql
 
 postgres-data/*
 homework/your_username
+settings.json

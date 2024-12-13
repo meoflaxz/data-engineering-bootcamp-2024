@@ -88,3 +88,4 @@
     - Eg knowing the engagement per qualified minute of Ethiopian children who use 7 year old iPhone devices on Christmas day is going to be a noisy metric
     - When you come up with a metric, it should be pretty broad
     - Don't be so narrow
+  

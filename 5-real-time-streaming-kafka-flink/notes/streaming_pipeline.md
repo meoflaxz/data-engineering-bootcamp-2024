@@ -1,4 +1,6 @@
-#### Streaming Pipeline
+# Streaming Pipeline
+
+#### What is Streaming Pipeline
 
 - Method to process data in a low-latency way
 - Low-latency means minutes to half an hour

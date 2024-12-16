@@ -132,7 +132,7 @@ dump.sql
 
 # Personal workspace files
 .idea/*
-.vscode/*
+.vscode/
 
 postgres-data/*
 homework/your_username

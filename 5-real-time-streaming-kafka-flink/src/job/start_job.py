@@ -129,20 +129,21 @@ def log_processing():
     try:
         # Create Kafka table
         source_table = create_events_source_kafka(t_env)
+        kafka_sink = create_processed_events_sink_kafka(t_env)
         postgres_sink = create_processed_events_sink_postgres(t_env)
         print('loading into postgres')
         t_env.execute_sql(
             f"""
-                    INSERT INTO {postgres_sink}
-                    SELECT
-                        ip,
-                        event_timestamp,
-                        referrer,
-                        host,
-                        url,
-                        get_location(ip) as geodata
-                    FROM {source_table}
-                    """
+                        INSERT INTO {postgres_sink}
+                        SELECT
+                            ip,
+                            event_timestamp,
+                            referrer,
+                            host,
+                            url,
+                            get_location(ip) as geodata
+                        FROM {source_table}
+                        """
         ).wait()
     except Exception as e:
         print("Writing records from Kafka to JDBC failed:", str(e))
@@ -150,3 +151,15 @@ def log_processing():
 
 if __name__ == '__main__':
     log_processing()
+
+
+    #   INSERT INTO {postgres_sink}
+    # SELECT
+    #     ip,
+    #     event_timestamp,
+    #     referrer,
+    #     host,
+    #     url,
+    #     get_location(ip) as geodata
+    # FROM {source_table}
+    # """

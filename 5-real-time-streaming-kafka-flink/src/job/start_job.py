@@ -118,6 +118,7 @@ def log_processing():
     # Set up the execution environment
     env = StreamExecutionEnvironment.get_execution_environment()
     print('got streaming environment')
+    # this is in milliseconds timing, 10 seconds
     env.enable_checkpointing(10 * 1000)
     env.set_parallelism(1)
 

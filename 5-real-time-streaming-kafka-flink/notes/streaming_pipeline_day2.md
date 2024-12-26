@@ -78,7 +78,7 @@
     - shopping session ends after 30 minutes without clicks
 - You have to specify when is the timeout to encapsulate the window session
 
-#### Allowed Lateness vs Watermarking
+#### Allowed Lateness vs Watermarking (Handling of late event)
 - Watermarks
     - Defines when the computational windows will execute
     - Helps define ordering of events that arrive out-ouf-order

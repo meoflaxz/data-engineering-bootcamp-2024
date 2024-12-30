@@ -24,7 +24,7 @@
 
 ## Flow Diagram
 
-    - ![alt text](image.png)
+    -   ![alt text](..assets/image-4.png)
 
 ## Schemas
 

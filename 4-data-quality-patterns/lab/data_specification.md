@@ -24,6 +24,8 @@
 
 ## Flow Diagram
 
+    - ![alt text](image.png)
+
 ## Schemas
 
 - **core.fct_website_events**
@@ -42,13 +44,13 @@
 | other_properties | MAP[STRING, STRING] | Any other valid properties that are part of this request |
 | ds | STRING | This is the partition column for this table |
 
-## Quality Checks:
-- Not NULL checks on (dim_hostname, dim_action_type, event_timestamp, dim_country, logged_out_user_id)
-- Make sure no dupes on Primary Key
-- dim_hostname is well formatted (something like this www.xx.com)
-- Row count checks  
-    - GROUP ON dim_hostname and check week-over-week counts for www.xx.com and www.xxx.com
-- Enumeration check on dim_action_type (should be signup, purchase, login, etc)
+- Quality Checks:
+    - Not NULL checks on (dim_hostname, dim_action_type, event_timestamp, dim_country, logged_out_user_id)
+    - Make sure no dupes on Primary Key
+    - dim_hostname is well formatted (something like this www.xx.com)
+    - Row count checks  
+        - GROUP ON dim_hostname and check week-over-week counts for www.xx.com and www.xxx.com
+    - Enumeration check on dim_action_type (should be signup, purchase, login, etc)
 
 - **core.agg_website_events**
     - This table is an aggregated view of all website events
@@ -63,3 +65,8 @@
 | aggregation_level | STRING | This is how this agg table is GROUPED. |
 | ds | STRING | Partition column for this table |
 
+- Quality Checks:
+    - Row count checks:
+        - Overall rollup should have more data than any other rollup
+    - event_hour should be look like it is old seasonal pattern
+    - m_total_events should be less > some minimum numbers

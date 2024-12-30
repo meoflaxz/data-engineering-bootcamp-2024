@@ -5,12 +5,12 @@
 #### This pipeline measure website traffic and user growth.
 
 #### The goal of this pipeline is to answer following questions
-- How many people are going to xx.com and xxx.com on daily basis?
+- How many people are going to xx. com and xxx. com on daily basis?
     - What is the geographical and device break down of traffic?
     - Where are these people coming from? LinkedIn? Substack?
-- How many people are signing up with an account on xx.com/signup each day?
+- How many people are signing up with an account on xx. com/signup each day?
     - What percentage of traffice is converting to signing up?
-- How many people are purchasing boot camps and courses at xx.com/bootcamp?
+- How many people are purchasing boot camps and courses at xx. com/bootcamp?
     - What percentage of signups convert to paying customers?
 
 ## Business Metrics
@@ -47,9 +47,9 @@
 - Quality Checks:
     - Not NULL checks on (dim_hostname, dim_action_type, event_timestamp, dim_country, logged_out_user_id)
     - Make sure no dupes on Primary Key
-    - dim_hostname is well formatted (something like this www.xx.com)
+    - dim_hostname is well formatted (something like this www.xx. com)
     - Row count checks  
-        - GROUP ON dim_hostname and check week-over-week counts for www.xx.com and www.xxx.com
+        - GROUP ON dim_hostname and check week-over-week counts for www.xx. com and www.xxx. com
     - Enumeration check on dim_action_type (should be signup, purchase, login, etc)
 
 - **core.agg_website_events**

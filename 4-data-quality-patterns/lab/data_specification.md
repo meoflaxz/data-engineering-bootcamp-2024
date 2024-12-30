@@ -26,11 +26,11 @@
 
 ## Schemas
 
-- core.fct_website_events : this table is a list of all events for xx.com and includes IP enrichment and user agent enrinchment for country and device specific information
+- **core.fct_website_events** : this table is a list of all events for xx.com and includes IP enrichment and user agent enrinchment for country and device specific information
 
 | **Column Name** | **Column Type** | **Column Comment** |
 | :------ | :------  | :------ |
-| user_id | BIGINT | This column is nullable for logged out events. This column indicates the user who generated this event. |
+| *user_id* | BIGINT | This column is nullable for logged out events. This column indicates the user who generated this event. |
 | logged_out_user_id | BIGINT | Hash of IP address and device information |
 | dim_hostname | STRING | The host associated with event | 
 | dim_country | STRING | The country associated with the IP address of this request |

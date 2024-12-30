@@ -16,3 +16,4 @@
 ## Business Metrics
 |  Metric Name | Defintion | is Guardrail |
 | ------------ | --------- | ------------ |
+| signup_conversion_rate | COUNT(signups)/COUNT(website_hits) | YES |

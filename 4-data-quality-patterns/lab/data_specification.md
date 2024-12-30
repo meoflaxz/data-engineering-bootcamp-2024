@@ -18,3 +18,4 @@
 | ------------ | ----------  | ------------ |
 | signup_conversion_rate | COUNT(signups)/COUNT(website_hits) | YES |
 | purchase_conversion_rate | COUNT(purchases)/COUNT(signups) | YES |
+| traffic_breakdown | COUNT(website_hits) GROUP BY referrer | NO |

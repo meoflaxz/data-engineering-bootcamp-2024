@@ -98,3 +98,23 @@
     - More test cells means more data to collect
 - Collect all events and dimensions you want to measure differences
     - Setup all logging events before collecting data
+
+#### The Data after Collected
+- Sigstat
+    - Negative (below 0) is negligible
+- P values - method to determine if coincidence is actually a coincidence or not.
+- P < 0.05 is the industry standard
+    - Still depends on situation if you want higher or lower
+
+#### Statistically significant results may still be worthless
+- Results maybe significant but it is tiny delta
+
+#### Gotchas When Looking for Statistically Significance
+- When looking at count data, extreme outliers can skew the distribution the wrong way
+    - Winsorization helps with this
+        - Replacing extreme values with less extreme values at specified percentiles (99% percentile)
+    - Alternatively, you can look at event counts instead of user counts
+
+#### Adding Your Own Metrics into Statsig
+- Add via batch ETL
+- Common pattern for DE in big tech to have these

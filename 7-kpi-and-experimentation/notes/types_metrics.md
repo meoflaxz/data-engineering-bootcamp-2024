@@ -1,4 +1,4 @@
-# METRICS
+# METRICS AND FUNNELS
 
 #### Leading vs Lagging Metrics
 - Metrics should be linked to either reduced cost or increased revenue
@@ -108,4 +108,26 @@
         - Incentives
         - LTV (lifetime value) - Mentorship / Networking / Community
 
-        
+### All the Metrics That You Defined and Mentioned, You Should Be Able to Place it in the Funnel! with A Cohesive Storytelling
+- If it does not fit anywhere in the funnel, most likely it is a waste of time
+- Some edge cases, cost and optimization
+
+#### How to Think Like a Product Manager
+- Through every step of the funnel, "what's sparking joy or pain?"
+    - Then you'll be optimizing the funnel 
+
+#### Bootcamp examples (Impression / Prospective Student)
+- Students learn something and are happy when they read my content on LinkedIn, TikTok and Instagram about data engineering
+- Students get deeper knowledge when signing up for my newsletter where I have a closer connection to them
+
+#### Bootcamp examples (New Student)
+- When you buy the bootcamp, you get immediate access to a huge content library. Students like that
+- When you buy the bootcamp, there's a delay in getting added to GitHub and Discord, students don't like that (Get it fixed!)
+
+#### Bootcamp examples (Engaged Students)
+- Students are happy when put into groups so they feel less alone
+- Students are happy when they get mentors as a reward for being engaged
+- Students feel pain when they get overwhelmed by the intensity of the bootcamp (Get it fixed!)
+
+#### Bootcamp examples (Referral / Testimonial)
+- Students feel very happy when they land a better job from the skills they learned in the bootcamp. Then they will tell everybody about the bootcamp / product.

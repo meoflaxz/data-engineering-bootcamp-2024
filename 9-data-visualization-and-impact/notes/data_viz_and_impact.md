@@ -63,5 +63,10 @@
 1. Proper data modelling
 2. Improving oncall processes
 3. Reducing data volumes
+    - Sampling, compression, parquet
 4. Picking the right tool for the job (eg migration)
+    - If old tech is reliable, just use it then
+    - Eg just for comparison, spark could fail more than hive due to the memory error
 5. Simplifying model and reducing capabilities (think 80/20 rule)
+    - Schema does not need to have every column is there of
+    - Analyst could bring the JIC (just-in-case) thing, and never use them entire time

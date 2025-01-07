@@ -54,4 +54,7 @@
         - Backfill 1 month of data, validate, only then you starts to backfill other month
         - Don't backfill all without validating them
     - Not sampling
+        - Sometimes you dont need all data
     - Not subpartitioning your data correctly (predicate pushdown is your friend)
+        - ENUM is subpartition where it ignores irrelevant records
+        - Predicate pushdown - moving filter conditions ("predicates") as close as possible to the data source before processing begins.

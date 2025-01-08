@@ -83,3 +83,69 @@
         - Get them in a room to discuss their definition
     - Build a spec that outlines a new path forward that can be agreed upon
 - Multiple sources of truth does not mean 1 of them is true, you could be a new one that is agreed from the discussion
+- Fruit for promotions and performance review
+
+#### Document All the Sources and The Discrepancies
+- Talk with all relevant stakeholders
+- If you can code search for similar names, that works great
+- Lineage of the shared source data is a good place to start too
+    - Find the most raw log data and the downstream of this is the definition that you want to find
+
+#### Understand from Stakeholders Why They Needed Something Different
+- There's usually a reason why there's multiple data sets
+    - Put an end to the bleeding problem if not stopped
+- Could be organizational, ownership, technical, skills, etc
+- Work with stakeholders to find an ownership model that works
+
+#### Build a Pipeline Spec
+- Capture all the needs from stakeholders
+- Get all the multiple sources of truth owners to sign off (this helps a lot with migrations later!!)
+
+#### Models for getting ahead of tech debt
+- Fix 'as you go'
+- Allocate a portion of time each quarter (often called tech excellence week)
+- Have the on-call person focus on tech debt during their shift
+
+#### Tech Debt Models
+
+- ![alt text](../assets/image5.png)
+
+- Fix 'as you go'
+    - Pros - Isn't much incremental burden
+    - Cons - Tech debt rarely actually gets tacked because it's the last priority
+- Allocate dedicated time each quarter
+    - Pros - Fix things in big bursts. Fix a lot of problems
+    - Cons - Tie up the team for a week. Tech debt builds up throughout the quarter
+- Have the oncall person do tech debt
+    - Pros - They fix bugs as they arise. They can see troubleshoot the most prioritize tech debt
+    - Cons - Oncall person does nothing else that week
+
+#### Data Migration Models
+
+- The extremely cautious approach
+    - Be careful not to break anything
+    - Parallel pipelines for months. Paying 2x costs
+    - Migration could takes 'forever'
+- The bull in a china shop approach
+    - Efficiency wins, minimize risk by migrating high-impact pipelines first
+    - Kill the legacy pipeline as soon as you can
+
+#### Proper oncall responsibilities
+- Set proper expectations with your stakeholders
+- DOCUMENT EVERY FAILURE AND BUG (huge pain short-term but great relief long-term)
+- Document every failure and bug (huge pain short-term but great relief long-term)
+    - Get notifications from failure? Document it
+    - Your oncall will be smoother and smoother
+- Oncall handoff
+    - Should be a 20-30 minutes sync to pass context from one oncall to the next
+
+#### Runbooks
+- Complex pipelines need runbooks (which should be linked in the spec too)
+    - Not every pipelines need runbooks though
+- Most important pieces:
+    - Primary and secondary owners
+    - Upstream owners (teams not individuals)
+        - Because team ownership fluctuates less than individual
+    - Common issues (if any)
+    - Critical downstream owners (teams not individuals)
+    - SLAs and agreements

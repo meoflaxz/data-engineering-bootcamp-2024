@@ -147,5 +147,13 @@
     - Upstream owners (teams not individuals)
         - Because team ownership fluctuates less than individual
     - Common issues (if any)
+        - Be fill out over time
+        - oncall will fill out whatever issues they will face
+        - Not bug per say, but common issues that happened due to the nature of the data, like eg web scraping data 
     - Critical downstream owners (teams not individuals)
+        - Ones that matters the most
     - SLAs and agreements
+        - When data is expected to arrive
+
+#### Upstream and Downstream Owner
+- ![alt text](../assets/image6.png)

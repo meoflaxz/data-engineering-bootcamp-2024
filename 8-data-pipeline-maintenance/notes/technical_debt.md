@@ -56,5 +56,30 @@
     - Not sampling
         - Sometimes you dont need all data
     - Not subpartitioning your data correctly (predicate pushdown is your friend)
-        - ENUM is subpartition where it ignores irrelevant records
+        - Similar to ENUM - subpartition where it ignores irrelevant records
         - Predicate pushdown - moving filter conditions ("predicates") as close as possible to the data source before processing begins.
+
+#### Why Subpartitions Minimize IO?
+- ![alt text](../assets/image4.png)
+- Very good for low-cardinality data, it avoid scanning all data, only skip to needed WHERE clause filter
+- This is where subpartitions come into play
+
+#### Large Cloud Bills
+- Large IO and compute costs are correlated by:
+    - Scanning too much data (use cumulative tables please)
+    - O(n^2) algorithms applied in UDFs (nested loops are usually bad)
+- Large IO and storage costs are correlated by:
+    - Not leveraging Parquet file format effectively
+        - Data is not compressed enough
+    - Duplicative data models
+        - Different definition of the same thing
+
+#### Multiple Sources of Truth
+- Some of the hardest (most impactful) work for data engineers
+- Steps
+    - Document all the sources and the discrepancies
+        - Get the know the term/data they used
+    - Understand from stakeholders why they needed something different
+        - Get them in a room to discuss their definition
+    - Build a spec that outlines a new path forward that can be agreed upon
+- Multiple sources of truth does not mean 1 of them is true, you could be a new one that is agreed from the discussion

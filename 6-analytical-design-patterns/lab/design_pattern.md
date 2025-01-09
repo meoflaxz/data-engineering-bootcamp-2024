@@ -18,7 +18,7 @@
     WITH yesterday AS (
         --where you start the cumulation matters a lot because everyone on this day is new user
         SELECT * FROM users_growth_accounting
-        WHERE date = DATE('2023-01-04')
+        WHERE date = DATE('2023-01-13')
     ),
     today AS (
         SELECT
@@ -26,7 +26,7 @@
             DATE_TRUNC('day', event_time::timestamp) AS today_date,
             COUNT(1)
         FROM events
-        WHERE DATE_TRUNC('day', event_time::timestamp) = DATE('2023-01-05')
+        WHERE DATE_TRUNC('day', event_time::timestamp) = DATE('2023-01-14')
         AND user_id IS NOT NULL
         GROUP BY user_id, DATE_TRUNC('day', event_time::timestamp)
     )
@@ -62,7 +62,7 @@
 ```
 
 
--- analysis
+#### analysis
 ```sql
     SELECT
         date,
@@ -70,3 +70,17 @@
     FROM users_growth_accounting
     GROUP BY date, daily_active_state;
 ```
+
+#### more analysis with percent and day of week
+```sql
+    SELECT
+        date - first_active_date AS days_since_first_active,
+        CAST(COUNT(CASE
+            WHEN daily_active_state
+                        IN ('Retained', 'Resurrected', 'New') THEN 1 END) AS REAL)/COUNT(1) as percent_active,
+        COUNT(1) FROM users_growth_accounting
+    GROUP BY date - first_active_date
+    ORDER BY days_since_first_active;
+```
+
+- ![alt text](image.png)

@@ -82,6 +82,7 @@
         (os_type),
         (device_type));
 
+-- query after creating the table
     SELECT * FROM device_hits_dashboard
     WHERE aggregation_level = 'os_type';
 ```

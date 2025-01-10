@@ -1,4 +1,4 @@
-#### FUNNEL ANALYSIS
+## FUNNEL ANALYSIS
 
 ```sql
     WITH deduped_events AS (
@@ -48,7 +48,8 @@
 
 - ![alt text](image-1.png)
 
-#### GROUPING SETS
+## GROUPING SETS
+
 ```sql
     CREATE TABLE device_hits_dashboard AS
     WITH events_augmented AS (

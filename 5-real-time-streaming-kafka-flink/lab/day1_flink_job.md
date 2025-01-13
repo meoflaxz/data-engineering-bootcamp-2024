@@ -20,6 +20,6 @@
 
 #### FLINK UI
 - task slot - maximum jobs at a time
-- "make job" - start job based on job folder
+- "make job" - start job based on job folder, following Makefile
 - latest offset will only read new data
 - kafka sink generally more performant because of high throughput compared to postgres sink

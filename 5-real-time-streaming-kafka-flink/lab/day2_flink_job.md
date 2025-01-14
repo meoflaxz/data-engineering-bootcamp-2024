@@ -33,4 +33,4 @@
     - flink will run more efficient
     - if hourly job, sure spark can be used
     - batch is better for bigger window
-    - flink need more ram to hold the window
+    - flink need more ram to hold the window 

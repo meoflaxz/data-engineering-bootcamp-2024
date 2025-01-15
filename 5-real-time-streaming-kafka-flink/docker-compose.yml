@@ -15,6 +15,7 @@ services:
     volumes:
       - ./:/opt/flink/usrlib
       - ./src/:/opt/src
+      - ./homework/:/opt/homework
     command: jobmanager
     extra_hosts:
       - "host.docker.internal:host-gateway" # Access services on the host machine from within the Docker container

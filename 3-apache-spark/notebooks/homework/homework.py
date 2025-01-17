@@ -243,5 +243,5 @@ spark.conf.set("spark.sql.autoBroadcastJoinThreshold", "1000000000000")
 
 val explicitBroadcast = matches.as("m").join(broadcast(matchDetails).as("md"), $"m.match_id" === $"md.match_id")
    .select($"md.*", split($"completion_date", " ").getItem(0).as("ds"))
-
-explicit_broadcast = medals_bucketed.join(broadcast(maps_bucketed), medals_bucketed.name == maps_bucketed.name)
+ 
+explicit_broadcast = medals_bucketed.join(broadcast(maps_bucketed), medals_bucketed.name == maps_bucketed.name) 

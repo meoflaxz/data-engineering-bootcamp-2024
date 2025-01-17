@@ -1,12 +1,12 @@
 from pyspark.sql import SparkSession
-from pyspark.sql.functions import broadcast
-from pyspark.sql.functions import col
+from pyspark.sql.functions import broadcast, col, avg, count
 from pyspark.storagelevel import StorageLevel
 
+# Initialize Spark session
 spark = (SparkSession.builder 
         .appName("Homework") 
-        .config("spark.executor.memory", "4g") 
-        .config("spark.driver.memory", "4g")
+        .config("spark.executor.memory", "6g") 
+        .config("spark.driver.memory", "6g")
         .config("spark.sql.shuffle.partitions", "200")
         .config("spark.sql.files.maxPartitionBytes", "134217728") 
         .config("spark.sql.autoBroadcastJoinThreshold", "-1") 
@@ -15,233 +15,284 @@ spark = (SparkSession.builder
         .config("spark.dynamicAllocation.maxExecutors", "50")
         .getOrCreate())
 
+# List of CSV files and their corresponding Parquet paths
+data_files = [
+    {"csv_path": "/home/iceberg/data/matches.csv", "parquet_path": "/home/iceberg/data/matches.parquet"},
+    {"csv_path": "/home/iceberg/data/match_details.csv", "parquet_path": "/home/iceberg/data/match_details.parquet"},
+    {"csv_path": "/home/iceberg/data/medals_matches_players.csv", "parquet_path": "/home/iceberg/data/medals_matches_players.parquet"},
+    {"csv_path": "/home/iceberg/data/medals.csv", "parquet_path": "/home/iceberg/data/medals.parquet"},
+    {"csv_path": "/home/iceberg/data/maps.csv", "parquet_path": "/home/iceberg/data/maps.parquet"}
+]
 
-# import matches
-matches_bucketed = spark.read.option("header", "true") \
-                .option("inferSchema", "true") \
-                .csv("/home/iceberg/data/matches.csv")
-
-# import match_detail
-match_details_bucketed = spark.read.option("header", "true") \
-                .option("inferSchema", "true") \
-                .csv("/home/iceberg/data/match_details.csv")
-
-# import medals_matches_players
-medals_matches_players_bucketed = spark.read.option("header", "true") \
-                .option("inferSchema", "true") \
-                .csv("/home/iceberg/data/medals_matches_players.csv")
-
-# import medals
-medals_bucketed = spark.read.option("header", "true") \
-                .option("inferSchema", "true") \
-                .csv("/home/iceberg/data/medals.csv")
-
-# import maps
-maps_bucketed = spark.read.option("header", "true") \
-                .option("inferSchema", "true") \
-                .csv("/home/iceberg/data/maps.csv") 
-
-# disabling broadcast join threshold
-spark.conf.set("spark.sql.autoBroadcastJoinThreshold", "-1")
-
-matches_bucketedDDL = """CREATE TABLE IF NOT EXISTS bootcamp.matches_bucketed (
-                         match_id STRING,
-                         is_team_game BOOLEAN,
-                         playlist_id STRING,
-                         completion_date TIMESTAMP
-                     )
-                     USING iceberg
-                     PARTITIONED BY (completion_date, bucket(16, match_id));
-                     """
-spark.sql(matches_bucketedDDL)
-
-# Get distinct completion dates
-distinctDates = matches_bucketed.select("completion_date").distinct()
-
-# Process data in chunks based on completion_date
-for row in distinctDates.collect():
-    date = row["completion_date"]
-    filteredMatches = matches_bucketed.filter(col("completion_date") == date)
+# Convert each CSV file to Parquet
+for file in data_files:
+    csv_path = file["csv_path"]
+    parquet_path = file["parquet_path"]
     
-    # Repartition and persist the filtered data
-    optimizedMatches = filteredMatches \
-        .select("match_id", "is_team_game", "playlist_id", "completion_date") \
-        .repartition(16, "match_id") \
-        .persist(StorageLevel.MEMORY_AND_DISK)
+    # Step 1: Read the CSV data
+    df = spark.read.option("header", "true") \
+                  .option("inferSchema", "true") \
+                  .csv(csv_path)
     
-    # Write the data to the table
-    optimizedMatches.write \
-        .mode("append") \
-        .bucketBy(16, "match_id") \
-        .partitionBy("completion_date") \
-        .saveAsTable("bootcamp.matches_bucketed")
-    
-    # Unpersist the DataFrame to free up memory
-    optimizedMatches.unpersist()
+    # Step 2: Convert CSV to Parquet
+    df.write.mode("overwrite").parquet(parquet_path)
+    print(f"Converted {csv_path} to {parquet_path}")
 
-# Verify the data in the table
-result = spark.sql("SELECT * FROM bootcamp.matches_bucketed")
-result.show()
+# Step 3: Read the Parquet data for further processing
+matches_bucketed = spark.read.parquet("/home/iceberg/data/matches.parquet")
+match_details_bucketed = spark.read.parquet("/home/iceberg/data/match_details.parquet")
+medals_matches_players_bucketed = spark.read.parquet("/home/iceberg/data/medals_matches_players.parquet")
+medals_bucketed = spark.read.parquet("/home/iceberg/data/medals.parquet")
+maps_bucketed = spark.read.parquet("/home/iceberg/data/maps.parquet")
 
+# Write DataFrames to bucketed tables with sorting within partitions
+matches_bucketed.sortWithinPartitions("match_id").write \
+    .mode("overwrite") \
+    .bucketBy(16, "match_id") \
+    .partitionBy("mapid") \
+    .saveAsTable("matches_bucketed")
 
-# matches_detail
-match_details_bucketedDDL = """CREATE TABLE IF NOT EXISTS bootcamp.match_details_bucketed (
-                         match_id STRING,
-                         player_gamertag STRING,
-                         did_win INTEGER,
-                         team_id INTEGER
-                     )
-                     USING iceberg
-                     PARTITIONED BY (player_gamertag, bucket(16, match_id));
-                     """
-spark.sql(match_details_bucketedDDL)
+maps_bucketed.sortWithinPartitions("mapid").write \
+    .mode("overwrite") \
+    .bucketBy(16, "mapid") \
+    .partitionBy("name") \
+    .saveAsTable("bootcamp.maps_bucketed")
 
-# Get distinct completion dates
-distinctPlayer_gamertag = match_details_bucketed.select("player_gamertag").distinct()
+medals_bucketed.sortWithinPartitions("medal_id").write \
+    .mode("overwrite") \
+    .bucketBy(16, "medal_id") \
+    .partitionBy("name") \
+    .saveAsTable("bootcamp.medals_bucketed")
 
-# Process data in chunks based on completion_date
-for row in distinctPlayer_gamertag.collect():
-    gamertag  = row["player_gamertag"]
-    filteredMatches = match_details_bucketed.filter(col("player_gamertag") == gamertag )
-    
-    # Repartition and persist the filtered data
-    optimizedMatches = filteredMatches \
-        .select("match_id", "player_gamertag", "did_win", "team_id") \
-        .repartition(16, "match_id") \
-        .persist(StorageLevel.MEMORY_AND_DISK)
-    
-    # Write the data to the table
-    optimizedMatches.write \
-        .mode("append") \
-        .bucketBy(16, "match_id") \
-        .partitionBy("player_gamertag") \
-        .saveAsTable("bootcamp.match_details_bucketed")
-    
-    # Unpersist the DataFrame to free up memory
-    optimizedMatches.unpersist()
+match_details_bucketed.sortWithinPartitions("match_id").write \
+    .mode("overwrite") \
+    .bucketBy(16, "match_id") \
+    .partitionBy("player_gamertag") \
+    .saveAsTable("bootcamp.match_details_bucketed")
 
-# Verify the data in the table
-result = spark.sql("SELECT * FROM bootcamp.match_details_bucketed")
-result.show()
+medals_matches_players_bucketed.sortWithinPartitions("match_id").write \
+    .mode("overwrite") \
+    .bucketBy(16, "match_id") \
+    .partitionBy("player_gamertag") \
+    .saveAsTable("medal_matches_players_bucketed")
 
-medals_matches_players_bucketedDDL = """CREATE TABLE IF NOT EXISTS bootcamp.medals_matches_players_bucketed (
-                         match_id STRING,
-                         player_gamertag STRING,
-                         match_id INTEGER,
-                         count INTEGER
-                     )
-                     USING iceberg
-                     PARTITIONED BY (player_gamertag, bucket(16, match_id));
-                     """
-spark.sql(medals_matches_players_bucketedDDL)
-
-# Get distinct player_gamertag
-distinctPlayer_gamertag = medals_matches_players_bucketed.select("player_gamertag").distinct()
-
-# Process data in chunks based on completion_date
-for row in distinctPlayer_gamertag.collect():
-    gamertag  = row["player_gamertag"]
-    filteredMatches = medals_matches_players_bucketed.filter(col("player_gamertag") == gamertag )
-    
-    # Repartition and persist the filtered data
-    optimizedMatches = filteredMatches \
-        .select("match_id", "player_gamertag", "match_id", "count") \
-        .repartition(16, "match_id") \
-        .persist(StorageLevel.MEMORY_AND_DISK)
-    
-    # Write the data to the table
-    optimizedMatches.write \
-        .mode("append") \
-        .bucketBy(16, "match_id") \
-        .partitionBy("player_gamertag") \
-        .saveAsTable("bootcamp.medals_matches_players_bucketed")
-    
-    # Unpersist the DataFrame to free up memory
-    optimizedMatches.unpersist()
-
-# Verify the data in the table
-result = spark.sql("SELECT * FROM bootcamp.medals_matches_players_bucketed")
-result.show()
-
-medalsDDL = """CREATE TABLE IF NOT EXISTS bootcamp.medals_bucketed (
-                         medal_id STRING,
-                         name STRING,
-                         difficulty INTEGER
-                     )
-                     USING iceberg
-                     PARTITIONED BY (name, bucket(16, medal_id));
-                     """
-spark.sql(medalsDDL)
-
-# Get distinct medal
-distinctMedal_name = medals_bucketed.select("name").distinct()
-
-# Process data in chunks based on completion_date
-for row in distinctMedal_name.collect():
-    medal  = row["name"]
-    filteredMatches = medals_matches_players_bucketed.filter(col("name") == medal )
-    
-    # Repartition and persist the filtered data
-    optimizedMatches = filteredMatches \
-        .select("medal_id", "name", "difficulty") \
-        .repartition(16, "medal_id") \
-        .persist(StorageLevel.MEMORY_AND_DISK)
-    
-    # Write the data to the table
-    optimizedMatches.write \
-        .mode("append") \
-        .bucketBy(16, "medal_id") \
-        .partitionBy("name") \
-        .saveAsTable("bootcamp.medals_bucketed")
-    
-    # Unpersist the DataFrame to free up memory
-    optimizedMatches.unpersist()
-
-# Verify the data in the table
-result = spark.sql("SELECT * FROM bootcamp.medals_bucketed")
-result.show()
-
-maps_bucketedDDL = """CREATE TABLE IF NOT EXISTS bootcamp.maps_bucketed (
-                         mapid STRING,
-                         name STRING
-                     )
-                     USING iceberg
-                     PARTITIONED BY (name, bucket(16, mapid));
-                     """
-spark.sql(maps_bucketedDDL)
-
-# Get distinct map
-distinctMap_name = maps_bucketed.select("name").distinct()
-
-# Process data in chunks based on completion_date
-for row in distinctMap_name.collect():
-    medal  = row["name"]
-    filteredMatches = maps_bucketed.filter(col("name") == medal )
-    
-    # Repartition and persist the filtered data
-    optimizedMatches = filteredMatches \
-        .select("mapid", "name") \
-        .repartition(16, "mapid") \
-        .persist(StorageLevel.MEMORY_AND_DISK)
-    
-    # Write the data to the table
-    optimizedMatches.write \
-        .mode("append") \
-        .bucketBy(16, "medal_id") \
-        .partitionBy("name") \
-        .saveAsTable("bootcamp.maps_bucketed")
-    
-    # Unpersist the DataFrame to free up memory
-    optimizedMatches.unpersist()
-
-# Verify the data in the table
-result = spark.sql("SELECT * FROM bootcamp.maps_bucketed")
-result.show()
-
-## BROADCAST JOIN FOR MEDALS AND MAPS
+# Explicit broadcast join
 spark.conf.set("spark.sql.autoBroadcastJoinThreshold", "1000000000000")
 
-val explicitBroadcast = matches.as("m").join(broadcast(matchDetails).as("md"), $"m.match_id" === $"md.match_id")
-   .select($"md.*", split($"completion_date", " ").getItem(0).as("ds"))
- 
-explicit_broadcast = medals_bucketed.join(broadcast(maps_bucketed), medals_bucketed.name == maps_bucketed.name) 
+
+# Bucket Join 1: matches_bucketed and match_details_bucketed
+bucket_join_1 = matches_bucketed.alias("matches").join(
+    match_details_bucketed.alias("details"),
+    on="match_id",  # Join on the bucketed column
+    how="inner"
+).select(
+    col("matches.match_id"),
+    col("matches.mapid"),
+    col("details.player_gamertag"),
+    col("details.player_total_kills")
+)
+
+# Show the result of the first bucket join
+print("Bucket Join 1: Matches and Match Details")
+bucket_join_1.show()
+
+# Bucket Join 2: matches_bucketed and medals_matches_players_bucketed
+bucket_join_2 = matches_bucketed.alias("matches").join(
+    medals_matches_players_bucketed.alias("medals"),
+    on="match_id",  # Join on the bucketed column
+    how="inner"
+).select(
+    col("matches.match_id"),
+    col("matches.mapid"),
+    col("medals.player_gamertag"),
+    col("medals.medal_id"),
+    col("medals.count")
+)
+
+# Show the result of the second bucket join
+print("Bucket Join 2: Matches and Medals Matches Players")
+bucket_join_2.show()
+
+# Bucket Join 3: match_details_bucketed and medals_matches_players_bucketed
+bucket_join_3 = match_details_bucketed.alias("details").join(
+    medals_matches_players_bucketed.alias("medals"),
+    on="match_id",  # Join on the bucketed column
+    how="inner"
+).select(
+    col("details.match_id"),
+    col("details.player_gamertag"),
+    col("details.player_total_kills"),
+    col("medals.medal_id"),
+    col("medals.count")
+)
+
+# Show the result of the third bucket join
+print("Bucket Join 3: Match Details and Medals Matches Players")
+bucket_join_3.show()
+
+# Perform the broadcast join
+explicit_broadcast_df = matches_bucketed.alias("matches").join(
+    broadcast(maps_bucketed).alias("map"),  # Explicitly broadcast maps_bucketed
+    col("matches.mapid") == col("map.mapid")  # Join condition
+).select(
+    col("matches.*"),  # Select all columns from matches_bucketed
+    col("map.name")    # Select the 'name' column from maps_bucketed
+)
+
+# Show the result
+explicit_broadcast_df.show()
+
+# Query 4a: Which player averages the most kills per game?
+player_avg_kills = match_details_bucketed.groupBy("player_gamertag") \
+    .agg(avg("player_total_kills").alias("avg_kills_per_game"))
+
+# Find the player with the highest average kills
+player_with_most_kills = player_avg_kills.orderBy("avg_kills_per_game", ascending=False).first()
+print(f"Player with the most kills: {player_with_most_kills}")
+
+# Query 4b: Which playlist gets played the most?
+if "playlist_id" in matches_bucketed.columns:
+    playlist_counts = matches_bucketed.groupBy("playlist_id") \
+        .agg(count("*").alias("match_count"))
+    playlist_counts.show()
+else:
+    print("playlist_id column not found in matches_bucketed.")
+
+# Query 4c: Which map gets played the most?
+map_counts = matches_bucketed.groupBy("mapid") \
+    .agg(count("*").alias("match_count"))
+map_counts.show()
+
+# Query 4d: Which map do players get the most Killing Spree medals on?
+# Filter for Killing Spree == 2430242797
+killing_spree_medals_df = medals_matches_players_bucketed.filter(col("medal_id") == "2430242797")
+
+# Group by mapid and count Killing Spree medals
+map_killing_spree_counts = killing_spree_medals_df.groupBy("mapid") \
+    .agg(count("*").alias("killing_spree_count"))
+
+# Find the map with the highest Killing Spree medal count
+most_killing_spree_map = map_killing_spree_counts.orderBy("killing_spree_count", ascending=False).first()
+print(f"Map with the most Killing Spree medals: {most_killing_spree_map}")
+
+# Function to calculate and print table size
+def calculate_table_size(table_name):
+    table_location = spark.sql(f"DESCRIBE FORMATTED {table_name}") \
+                          .filter(col("col_name") == "Location") \
+                          .select("data_type") \
+                          .collect()[0][0]
+    table_size = spark.sql(f"SELECT SUM(size) AS total_size FROM (SELECT input_file_name(), length(*) AS size FROM {table_name})") \
+                      .collect()[0][0]
+    print(f"Size of {table_name}: {table_size / (1024 * 1024):.2f} MB")
+
+# Experiment with different partitioning strategies for each dataset
+
+# 1. matches_bucketed
+# Version 1: Partitioned by mapid
+matches_bucketed.write \
+    .mode("overwrite") \
+    .partitionBy("mapid") \
+    .saveAsTable("matches_bucketed_v1")
+calculate_table_size("matches_bucketed_v1")
+
+# Version 2: Partitioned by mapid and sorted within partitions by match_id
+matches_bucketed.sortWithinPartitions("match_id").write \
+    .mode("overwrite") \
+    .partitionBy("mapid") \
+    .saveAsTable("matches_bucketed_v2")
+calculate_table_size("matches_bucketed_v2")
+
+# Version 3: Partitioned by mapid and match_id
+matches_bucketed.write \
+    .mode("overwrite") \
+    .partitionBy("mapid", "match_id") \
+    .saveAsTable("matches_bucketed_v3")
+calculate_table_size("matches_bucketed_v3")
+
+# 2. maps_bucketed
+# Version 1: Partitioned by name
+maps_bucketed.write \
+    .mode("overwrite") \
+    .partitionBy("name") \
+    .saveAsTable("maps_bucketed_v1")
+calculate_table_size("maps_bucketed_v1")
+
+# Version 2: Partitioned by name and sorted within partitions by mapid
+maps_bucketed.sortWithinPartitions("mapid").write \
+    .mode("overwrite") \
+    .partitionBy("name") \
+    .saveAsTable("maps_bucketed_v2")
+calculate_table_size("maps_bucketed_v2")
+
+# Version 3: Partitioned by name and mapid
+maps_bucketed.write \
+    .mode("overwrite") \
+    .partitionBy("name", "mapid") \
+    .saveAsTable("maps_bucketed_v3")
+calculate_table_size("maps_bucketed_v3")
+
+# 3. match_details_bucketed
+# Version 1: Partitioned by player_gamertag
+match_details_bucketed.write \
+    .mode("overwrite") \
+    .partitionBy("player_gamertag") \
+    .saveAsTable("match_details_bucketed_v1")
+calculate_table_size("match_details_bucketed_v1")
+
+# Version 2: Partitioned by player_gamertag and sorted within partitions by match_id
+match_details_bucketed.sortWithinPartitions("match_id").write \
+    .mode("overwrite") \
+    .partitionBy("player_gamertag") \
+    .saveAsTable("match_details_bucketed_v2")
+calculate_table_size("match_details_bucketed_v2")
+
+# Version 3: Partitioned by player_gamertag and match_id
+match_details_bucketed.write \
+    .mode("overwrite") \
+    .partitionBy("player_gamertag", "match_id") \
+    .saveAsTable("match_details_bucketed_v3")
+calculate_table_size("match_details_bucketed_v3")
+
+# 4. medals_bucketed
+# Version 1: Partitioned by name
+medals_bucketed.write \
+    .mode("overwrite") \
+    .partitionBy("name") \
+    .saveAsTable("medals_bucketed_v1")
+calculate_table_size("medals_bucketed_v1")
+
+# Version 2: Partitioned by name and sorted within partitions by medal_id
+medals_bucketed.sortWithinPartitions("medal_id").write \
+    .mode("overwrite") \
+    .partitionBy("name") \
+    .saveAsTable("medals_bucketed_v2")
+calculate_table_size("medals_bucketed_v2")
+
+# Version 3: Partitioned by name and medal_id
+medals_bucketed.write \
+    .mode("overwrite") \
+    .partitionBy("name", "medal_id") \
+    .saveAsTable("medals_bucketed_v3")
+calculate_table_size("medals_bucketed_v3")
+
+# 5. medals_matches_players_bucketed
+# Version 1: Partitioned by player_gamertag
+medals_matches_players_bucketed.write \
+    .mode("overwrite") \
+    .partitionBy("player_gamertag") \
+    .saveAsTable("medal_matches_players_bucketed_v1")
+calculate_table_size("medal_matches_players_bucketed_v1")
+
+# Version 2: Partitioned by player_gamertag and sorted within partitions by match_id
+medals_matches_players_bucketed.sortWithinPartitions("match_id").write \
+    .mode("overwrite") \
+    .partitionBy("player_gamertag") \
+    .saveAsTable("medal_matches_players_bucketed_v2")
+calculate_table_size("medal_matches_players_bucketed_v2")
+
+# Version 3: Partitioned by player_gamertag and match_id
+medals_matches_players_bucketed.write \
+    .mode("overwrite") \
+    .partitionBy("player_gamertag", "match_id") \
+    .saveAsTable("medal_matches_players_bucketed_v3")
+calculate_table_size("medal_matches_players_bucketed_v3")

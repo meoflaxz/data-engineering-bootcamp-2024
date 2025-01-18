@@ -46,38 +46,36 @@ medals_bucketed = spark.read.parquet("/home/iceberg/data/medals.parquet")
 maps_bucketed = spark.read.parquet("/home/iceberg/data/maps.parquet")
 
 # Write DataFrames to bucketed tables with sorting within partitions
-matches_bucketed.sortWithinPartitions("match_id").write \
+matches_bucketed.write \
     .mode("overwrite") \
     .bucketBy(16, "match_id") \
-    .partitionBy("mapid") \
+    .sortWithinPartitions("mapid") \
     .saveAsTable("matches_bucketed")
 
-maps_bucketed.sortWithinPartitions("mapid").write \
+maps_bucketed.write \
     .mode("overwrite") \
     .bucketBy(16, "mapid") \
-    .partitionBy("name") \
+    .sortWithinPartitions("name") \
     .saveAsTable("bootcamp.maps_bucketed")
 
-medals_bucketed.sortWithinPartitions("medal_id").write \
+medals_bucketed.write \
     .mode("overwrite") \
     .bucketBy(16, "medal_id") \
-    .partitionBy("name") \
+    .sortWithinPartitions("name") \
     .saveAsTable("bootcamp.medals_bucketed")
 
-match_details_bucketed.sortWithinPartitions("match_id").write \
+match_details_bucketed.write \
     .mode("overwrite") \
     .bucketBy(16, "match_id") \
-    .partitionBy("player_gamertag") \
+    .sortWithinPartitions("player_gamertag") \
     .saveAsTable("bootcamp.match_details_bucketed")
 
-medals_matches_players_bucketed.sortWithinPartitions("match_id").write \
+medals_matches_players_bucketed.write \
     .mode("overwrite") \
     .bucketBy(16, "match_id") \
-    .partitionBy("player_gamertag") \
+    .sortWithinPartitions("player_gamertag") \
     .saveAsTable("medal_matches_players_bucketed")
 
-# Explicit broadcast join
-spark.conf.set("spark.sql.autoBroadcastJoinThreshold", "1000000000000")
 
 
 # Bucket Join 1: matches_bucketed and match_details_bucketed
@@ -129,6 +127,10 @@ bucket_join_3 = match_details_bucketed.alias("details").join(
 # Show the result of the third bucket join
 print("Bucket Join 3: Match Details and Medals Matches Players")
 bucket_join_3.show()
+
+
+# Explicit broadcast join
+spark.conf.set("spark.sql.autoBroadcastJoinThreshold", "1000000000000")
 
 # Perform the broadcast join
 explicit_broadcast_df = matches_bucketed.alias("matches").join(

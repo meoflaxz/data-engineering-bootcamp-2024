@@ -109,7 +109,7 @@
 
     - [The Datelist Int - An Efficient Data Structure for User Growth](https://www.linkedin.com/pulse/datelist-int-efficient-data-structure-user-growth-max-s)
 
-- PROS N CONS OF DATELIST
+- PROS N CONS OF DATELIST DATATYPE
 
     - PROS
         - Compact storage
